@@ -32,13 +32,13 @@
 
   @media (max-width: 767px) {
     .user-registration {
-      background-image: url("/Users/darshan/Documents/VTalk/vtalk_frontend/Essentials/Colorful Illustration Astronaut Phone Wallpaper.png");
+      background-image: url("../../public/Essentials/background.svg");
     }
   }
 
   @media (min-width: 768px) {
     .user-registration {
-      /* background-image: url("/Users/darshan/Documents/VTalk/vtalk_frontend/Essentials/Bright Blue Retro Comic Background Desktop Wallpaper.png"); */
-      background-color:darkslateblue;
+      background-image: url("../../public/Essentials/background.svg");
+      /* background-color:darkslateblue; */
     }
   }
