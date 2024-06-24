@@ -1,0 +1,341 @@
+/* .room-selection {
+  padding: 20px;
+  background-color: #1a1a1a;
+  min-height: 100vh;
+  color: white;
+}
+
+.room-head {
+  display: grid;
+  grid-template-columns: 24fr 1fr;
+}
+
+.room-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30vw, 1fr));
+  grid-gap: 10px;
+}
+
+.room-card {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  min-width: 100px;
+}
+
+.room-card:hover {
+  background-color: #f0f0f0;
+  color: black;
+}
+
+.room-card:active {
+  background-color: #f0f0f0;
+  color: black;
+}
+
+@media screen and (max-width: 768px) {
+  .create-search-box {
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .create-search-box {
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  
+}
+.create-room-input {
+  display: grid;
+  grid-template-columns: 9fr 1fr;
+  gap: 0.4px;
+  border: #fff;
+  border-radius: 25px;
+  margin: auto;
+  border: #fff;
+  border: 2px solid #fff;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.8);
+  margin-bottom: 10px;
+}
+
+.create-room-input input {
+  flex-grow: 1;
+  border: none;
+  border-radius: 5px;
+  background-color: transparent;
+  color: white;
+}
+
+.create-room-input input:focus {
+  outline: none;
+}
+
+.create-room-input img {
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: auto;
+  color: white;
+}
+
+.create-room-input img:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s;
+}
+
+.create-room-input img:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.status {
+  display: flex;
+  font-size: small;
+  justify-content: end;
+}
+
+.search-button {
+  background-color: inherit;
+  width: 70%;
+  height: 70%;
+  transition: background-color 0.3s;
+  margin: auto;
+  cursor: pointer;
+}
+
+.search-button:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s;
+}
+
+.search-button:active {
+  background-color: inherit;
+  transform: scale(0.9);
+}
+
+.create-button {
+  background-color: inherit;
+  width: 70%;
+  height: 70%;
+  transition: background-color 0.3s;
+  margin: auto;
+  cursor: pointer;
+}
+
+.create-button:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s;
+}
+
+.create-button:active {
+  background-color: inherit;
+  transform: scale(0.9);
+}
+
+.refresh-button {
+  background-color: inherit;
+  width: 30px;
+  height: 30px;
+  transition: background-color 0.3s;
+  margin: auto;
+  justify-self: end;
+  cursor: pointer;
+}
+
+.refresh-button:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s;
+}
+
+.refresh-button:active {
+  background-color: inherit;
+  transform: scale(0.9);
+} */
+
+
+.room-selection {
+  padding: 20px;
+  background-color: #fafafa; /* Light background color */
+  min-height: 100vh;
+  color: #333; /* Dark text color */
+}
+
+.room-head {
+  display: grid;
+  grid-template-columns: 24fr 1fr;
+}
+
+.room-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30vw, 1fr));
+  grid-gap: 10px;
+}
+
+.room-card {
+  border: 1px solid #ddd; /* Light border color */
+  border-radius: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  min-width: 100px;
+}
+
+.room-card:hover {
+  background-color: #f0f0f0;
+  color: #333; /* Dark text color on hover */
+}
+
+.room-card:active {
+  background-color: #f0f0f0;
+  color: #333; /* Dark text color on active state */
+}
+
+@media screen and (max-width: 768px) {
+  .create-search-box {
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .create-search-box {
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
+.create-room-input {
+  display: grid;
+  grid-template-columns: 0.5fr 9fr 1fr;
+  gap: 0.4px;
+  border: 2px solid #ddd; /* Light border color */
+  border-radius: 25px;
+  margin: auto;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Light shadow */
+  margin-bottom: 10px;
+}
+
+.create-room-input input {
+  flex-grow: 1;
+  border: none;
+  border-radius: 5px;
+  background-color: transparent;
+  color: #333; /* Dark text color */
+}
+
+.create-room-input input:focus {
+  outline: none;
+}
+
+.create-room-input img {
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: auto;
+  color: #333; /* Dark text color */
+}
+
+.create-room-input img:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s;
+}
+
+.create-room-input img:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.create-room-input select {
+  flex-grow: 1;
+  border: none;
+  width: auto;
+  background-color: inherit;
+
+}
+
+.select-room-input {
+  display: grid;
+  grid-template-columns: 9fr 1fr;
+  gap: 0.4px;
+  border: 2px solid #ddd; /* Light border color */
+  border-radius: 25px;
+  margin: auto;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Light shadow */
+  margin-bottom: 10px;
+}
+
+.select-room-input input {
+  flex-grow: 1;
+  border: none;
+  border-radius: 5px;
+  background-color: transparent;
+  color: #333; /* Dark text color */
+}
+
+.select-room-input input:focus {
+  outline: none;
+}
+
+.select-room-input img {
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: auto;
+  color: #333; /* Dark text color */
+}
+
+.select-room-input img:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s;
+}
+
+.select-room-input img:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.status {
+  display: flex;
+  font-size: small;
+  justify-content: end;
+}
+
+.search-button,
+.create-button,
+.refresh-button {
+  background-color: #fafafa; /* Light background color */
+  width: 70%;
+  height: 70%;
+  transition: background-color 0.3s;
+  margin: auto;
+  cursor: pointer;
+}
+
+.search-button:hover,
+.create-button:hover,
+.refresh-button:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s;
+}
+
+.search-button:active,
+.create-button:active,
+.refresh-button:active {
+  background-color: #fafafa; /* Light background color */
+  transform: scale(0.9);
+}
