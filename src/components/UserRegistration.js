@@ -52,11 +52,6 @@ const UserRegistration = () => {
 
   return (
     <div className="user-registration">
-      <div className='clears'>
-        <button onClick={deleteChats}>Chats</button>
-        <button onClick={deleteRooms}>Rooms</button>
-        <button onClick={deleteUsers}>Users</button>
-      </div>
       {isLoading && <div className="loader">Loading...</div>}
       <form className='signup' onSubmit={handleRegister}>
         <h2>Welcome to Conversia !</h2>
