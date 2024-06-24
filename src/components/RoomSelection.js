@@ -37,7 +37,7 @@ const RoomSelection = (props) => {
 
   const handleBeforeUnload = () => {
     axios
-      .get('http://localhost:8080/deleteUser' + '?id=' + user.userId)
+      .get('https://vtalk-backend-9e7a122da743.herokuapp.com/deleteUser' + '?id=' + user.userId)
       .catch((err) => {
         console.error(err);
       });
@@ -46,7 +46,7 @@ const RoomSelection = (props) => {
   const handleRoomRecieved = () => {
     if (!search) {
       axios
-        .get('http://localhost:8080/rooms')
+        .get('https://vtalk-backend-9e7a122da743.herokuapp.com/rooms')
         .then((res) => {
           setRooms(res.data);
         })
@@ -67,7 +67,7 @@ const RoomSelection = (props) => {
       setLoading(true);
       disableAllInputs();
       axios
-        .get('http://localhost:8080/createRoom?label=' + roomDescription + '&category=' + category)
+        .get('https://vtalk-backend-9e7a122da743.herokuapp.com/createRoom?label=' + roomDescription + '&category=' + category)
         .then((res) => {
           handleRoomSelected(res.data.roomCode);
         })
@@ -88,7 +88,7 @@ const RoomSelection = (props) => {
       setLoading(true);
       disableAllInputs();
       axios
-        .get('http://localhost:8080/searchRooms?label=' + search)
+        .get('https://vtalk-backend-9e7a122da743.herokuapp.com/searchRooms?label=' + search)
         .then((res) => {
           setRooms(res.data);
         })
@@ -105,7 +105,7 @@ const RoomSelection = (props) => {
     setLoading(true);
     disableAllInputs();
     axios
-      .get('http://localhost:8080/joinRoom?roomcode=' + roomCode + '&userid=' + user.userId)
+      .get('https://vtalk-backend-9e7a122da743.herokuapp.com/joinRoom?roomcode=' + roomCode + '&userid=' + user.userId)
       .then((res) => {
         setLoading(false);
         enableAllInputs();

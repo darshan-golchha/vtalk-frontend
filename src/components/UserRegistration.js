@@ -16,7 +16,7 @@ const UserRegistration = () => {
     setLoading(true);
     disableAllInputs();
     axios
-      .post('http://localhost:8080/addUser', { fullName: username })
+      .post('https://vtalk-backend-9e7a122da743.herokuapp.com/addUser', { fullName: username })
       .then((res) => {
         // Redirect to the room selection page
         setLoading(false);
@@ -34,19 +34,19 @@ const UserRegistration = () => {
 
   const deleteChats = () => {
     axios
-    .get('http://localhost:8080/deleteAllChats')
+    .get('https://vtalk-backend-9e7a122da743.herokuapp.com/deleteAllChats')
     .catch((err) => {console.log(err)});
   }
 
   const deleteRooms = () => {
     axios
-    .get('http://localhost:8080/deleteAllRooms')
+    .get('https://vtalk-backend-9e7a122da743.herokuapp.com/deleteAllRooms')
     .catch((err) => {console.log(err)});
   }
 
   const deleteUsers = () => {
     axios
-    .get('http://localhost:8080/deleteAllUsers')
+    .get('https://vtalk-backend-9e7a122da743.herokuapp.com/deleteAllUsers')
     .catch((err) => {console.log(err)});
   }
 
