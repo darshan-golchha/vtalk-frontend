@@ -13,38 +13,50 @@ var stompClient = null;
 const ChatPage = () => {
   const { isLoading, setLoading, disableAllInputs, enableAllInputs } = useLoadingContext();
   const location = useLocation();
-  const user = location.state?.user;
+  const [user, setUser] = useState(location.state?.user || JSON.parse(localStorage.getItem('user')));
   const [publicChats, setPublicChats] = useState([]);
   const [users, setUsers] = useState([]);
   const [userData, setUserData] = useState({ "message": "", "connected": false });
-  const [username, setUsername] = useState(user.fullName);
-  const [roomCode, setRoomCode] = useState(user.roomCode);
+  const [username, setUsername] = useState(user?.fullName);
+  const [roomCode, setRoomCode] = useState(user?.roomCode || localStorage.getItem('roomCode'));
   const navigate = useNavigate();
   const chatMessagesRef = useRef(null);
   const [label, setLabel] = useState('Room Label');
-  const [userId, setUserId] = useState(user.userId);
+  const [userId, setUserId] = useState(user?.userId);
   const inputRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
-      leaveChatroom();
+      navigate(`/`);
+    } else {
+      localStorage.setItem('user', JSON.stringify(user));
     }
+
     if (roomCode) {
+      localStorage.setItem('roomCode', roomCode);
       connect();
     }
 
-    // Set up beforeunload event listener
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // Cleanup event listener on component unmount
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [roomCode]);
 
-  const handleBeforeUnload = () => {
-    axios
-      .get('https://vtalk-backend-9e7a122da743.herokuapp.com/deleteUser?id=' + user.userId)
+  useEffect(() => {
+    const storedRoomCode = localStorage.getItem('roomCode');
+    if (storedRoomCode) {
+      setRoomCode(storedRoomCode);
+    }
+  }, []);
+
+  const handleBeforeUnload = (event) => {
+    const confirmationMessage = 'Are you sure you want to leave?';
+    event.returnValue = confirmationMessage;
+    return confirmationMessage;
+
+    axios.get('https://vtalk-backend-9e7a122da743.herokuapp.com/deleteUser?id=' + user.userId)
       .catch((err) => {
         console.error(err);
       });
@@ -58,7 +70,6 @@ const ChatPage = () => {
   };
 
   const onConnected = () => {
-    // Getting previous chats of the room
     axios
       .get('https://vtalk-backend-9e7a122da743.herokuapp.com/chats?roomcode=' + roomCode)
       .then((res) => {
@@ -67,8 +78,10 @@ const ChatPage = () => {
       .catch((err) => {
         console.error(err);
       });
+
     stompClient.send(`/app/user/connectUser`, {}, JSON.stringify(user));
     stompClient.subscribe(`/user/vtalk/messages/${roomCode}`, onMessageReceived);
+    
     axios
       .get('https://vtalk-backend-9e7a122da743.herokuapp.com/roomLabel' + '?roomcode=' + roomCode)
       .then((res) => {
@@ -84,7 +97,6 @@ const ChatPage = () => {
     var payloadData = JSON.parse(payload.body);
     setPublicChats((prevChats) => [...prevChats, payloadData]);
 
-    // Scroll to the bottom of the chatMessagesRef on new message
     if (chatMessagesRef.current) {
       const lastMessage = chatMessagesRef.current.lastChild;
       lastMessage.scrollIntoView({ behavior: "smooth" });
@@ -137,7 +149,11 @@ const ChatPage = () => {
         .then((res) => {
           setLoading(false);
           enableAllInputs();
-          navigate(`/rooms`, { state: { user: res.data } });
+          if (user){
+            navigate(`/rooms`, { state: { user: res.data } });
+          } else {
+            navigate(`/`);
+          }
         })
         .catch((err) => {
           console.error(err);
@@ -158,10 +174,8 @@ const ChatPage = () => {
     }
   };
 
-
   return (
     <div className='chat-window'>
-
       <div className="chat-box">
         {isLoading && <div className="loader">Leaving The Chat Room...</div>}
         <div className='chat-top'>
@@ -170,10 +184,7 @@ const ChatPage = () => {
         </div>
         <div className="chat-content" ref={chatMessagesRef}>
           {publicChats.map((chat, index, chats) => {
-            // Get the date string in "YYYY-MM-DD" format
             const currentDate = new Date(chat.timestamp).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
-
-            // Check if the current message has a different date than the previous one
             const showDateStamp = index === 0 || currentDate !== new Date(chats[index - 1].timestamp).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
 
             return (
@@ -183,7 +194,6 @@ const ChatPage = () => {
                     <p>{getDateStampText(currentDate)}</p>
                   </div>
                 )}
-
                 <div className={`message ${chat.senderId === userId ? "self" : ""} ${chat.fullName ? "" : "notification"}`} key={index}>
                   {chat.fullName && chat.senderId !== userId && <div className="avatar">{chat.fullName[0].toUpperCase()}</div>}
                   <div className="message-data">
@@ -220,13 +230,10 @@ const ChatPage = () => {
               ref={inputRef}
             />
             <IoSendSharp className='send-button' onClick={sendValue} />
-            {/* <button className='send-button' onClick={sendValue}>Send</button> */}
           </div>
         </form>
       </div>
-
     </div>
-
   );
 };
 

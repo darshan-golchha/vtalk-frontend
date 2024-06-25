@@ -12,8 +12,8 @@ import { IoAddSharp } from 'react-icons/io5';
 
 const RoomSelection = (props) => {
   const location = useLocation();
-  const user = location.state?.user;
-  const [username, setUsername] = useState(user ? user.fullName : '');
+  const user = location.state?.user || JSON.parse(localStorage.getItem('user'));
+  const [username, setUsername] = useState('');
   const [rooms, setRooms] = useState([]);
   const [roomDescription, setRoomDescription] = useState('');
   const navigate = useNavigate();
@@ -24,6 +24,9 @@ const RoomSelection = (props) => {
   const [category, setCategory] = useState('');
 
   useEffect(() => {
+    if (!user) {
+      navigate('/');
+    }
     handleRoomRecieved();
 
     // Set up beforeunload event listener
@@ -35,12 +38,15 @@ const RoomSelection = (props) => {
     };
   }, []);
 
+  // If user refreshes the page, delete the user from the server and navigate to the login page
+
   const handleBeforeUnload = () => {
     axios
       .get('https://vtalk-backend-9e7a122da743.herokuapp.com/deleteUser' + '?id=' + user.userId)
       .catch((err) => {
         console.error(err);
       });
+      navigate('/');
   };
 
   const handleRoomRecieved = () => {
@@ -125,7 +131,7 @@ const RoomSelection = (props) => {
   return (
     <div className="room-selection">
       {isLoading && <div className="loader">{loaderMessage}</div>}
-      <h1 style={{ textAlign: 'center' }}>Welcome, {user.fullName}!</h1>
+      <h1 style={{ textAlign: 'center' }}>Welcome, {user && user.fullName}!</h1>
       <div className="create-search-box">
         <div className="search-section">
           <h3>Search for Existing Rooms</h3>
@@ -147,8 +153,6 @@ const RoomSelection = (props) => {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              width: '100%',
-              height: '100%',
               borderRadius: '50px',
             }}>
               <select
@@ -161,15 +165,15 @@ const RoomSelection = (props) => {
                   borderTopRightRadius: '0',
                   borderBottomRightRadius: '0',
                   backgroundColor: '#f9f9f9',
-                  fontSize: '16px',
                   color: '#333',
                   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                   outline: 'none',
                   cursor: 'pointer',
                   appearance: 'none', // For hiding the default dropdown arrow in some browsers
+                  width: '130px'
                 }}
               >
-                <option value="">Select Category</option>
+                <option value="">Category..</option>
                 {categories.map((category, index) => (
                   <option key={index} value={category}>
                     {category}
@@ -178,8 +182,9 @@ const RoomSelection = (props) => {
               </select>
             </div>
             <input
+            className='room-description-input'
               type="text"
-              placeholder="Enter Room Label..."
+              placeholder="Label..."
               value={roomDescription}
               onChange={(e) => setRoomDescription(e.target.value)}
             />

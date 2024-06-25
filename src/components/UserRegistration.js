@@ -21,6 +21,7 @@ const UserRegistration = () => {
         // Redirect to the room selection page
         setLoading(false);
         enableAllInputs();
+        localStorage.setItem('user', JSON.stringify(res.data));
         navigate('/rooms', { state: { user: res.data } });
       })
       .catch((err) => {
