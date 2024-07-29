@@ -7,12 +7,13 @@ import { IoRefreshSharp } from 'react-icons/io5';
 
 const UserRegistration = () => {
   const [username, setUsername] = useState('');
-  const { isLoading, setLoading, disableAllInputs, enableAllInputs } = useLoadingContext();
+  const { isLoading, setLoading, loaderMessage, setLoaderMessage, disableAllInputs, enableAllInputs } = useLoadingContext();
 
   const navigate = useNavigate();
 
   const handleRegister = (event) => {
     event.preventDefault();
+    setLoaderMessage('Loading...');
     setLoading(true);
     disableAllInputs();
     axios
@@ -53,7 +54,7 @@ const UserRegistration = () => {
 
   return (
     <div className="user-registration">
-      {isLoading && <div className="loader">Loading...</div>}
+      {isLoading && <div className="loader"></div>}
       <form className='signup' onSubmit={handleRegister}>
         <h2>Welcome to Conversia !</h2>
         <input

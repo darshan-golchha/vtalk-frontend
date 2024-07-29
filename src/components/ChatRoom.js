@@ -5,13 +5,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../css/chatroom.css';
 import { useLoadingContext } from '../components/Loader';
-import { IoSendSharp } from "react-icons/io5";
-import { IoExit } from "react-icons/io5";
+import { IoSendSharp, IoExit, IoAttach, IoImage, IoMusicalNote, IoVideocam, IoClose, IoMic, IoMicOff } from "react-icons/io5";
 
 var stompClient = null;
 
 const ChatPage = () => {
-  const { isLoading, setLoading, disableAllInputs, enableAllInputs } = useLoadingContext();
+  const { isLoading, setLoading, loaderMessage, setLoaderMessage, disableAllInputs, enableAllInputs } = useLoadingContext();
   const location = useLocation();
   const [user, setUser] = useState(location.state?.user || JSON.parse(localStorage.getItem('user')));
   const [publicChats, setPublicChats] = useState([]);
@@ -24,6 +23,45 @@ const ChatPage = () => {
   const [label, setLabel] = useState('Room Label');
   const [userId, setUserId] = useState(user?.userId);
   const inputRef = useRef(null);
+  const [file, setFile] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioChunks, setAudioChunks] = useState([]);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+
+
+  const startRecording = async () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      setMediaRecorder(recorder);
+
+      recorder.ondataavailable = event => {
+        if (event.data.size > 0) {
+          setAudioChunks(prevChunks => [...prevChunks, event.data]);
+        }
+      };
+
+      recorder.start();
+      setIsRecording(true);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
+        setFile(new File([audioBlob], 'recorded_audio.mp3', { type: 'audio/mpeg' }));
+        setAudioChunks([]);
+      };
+    }
+  };
+
+
 
   useEffect(() => {
     if (!user) {
@@ -51,11 +89,16 @@ const ChatPage = () => {
     }
   }, []);
 
-  const handleBeforeUnload = (event) => {
-    const confirmationMessage = 'Are you sure you want to leave?';
-    event.returnValue = confirmationMessage;
-    return confirmationMessage;
+  const handleFileChange = (event) => {
+    setFile(event.target.files[0]);
+  };
 
+  const handleFileDeselect = () => {
+    setFile(null);
+  };
+
+  const handleBeforeUnload = (event) => {
+    event.preventDefault();
     axios.get('https://vtalk-backend-9e7a122da743.herokuapp.com/deleteUser?id=' + user.userId)
       .catch((err) => {
         console.error(err);
@@ -81,7 +124,7 @@ const ChatPage = () => {
 
     stompClient.send(`/app/user/connectUser`, {}, JSON.stringify(user));
     stompClient.subscribe(`/user/vtalk/messages/${roomCode}`, onMessageReceived);
-    
+
     axios
       .get('https://vtalk-backend-9e7a122da743.herokuapp.com/roomLabel' + '?roomcode=' + roomCode)
       .then((res) => {
@@ -112,25 +155,59 @@ const ChatPage = () => {
     setUserData({ ...userData, "message": value });
   };
 
-  const sendValue = (event) => {
+  const sendValue = async (event) => {
     event.preventDefault();
     setUserData({ ...userData, "connected": true });
-    setLoading(true);
+    console.log('disabling...');
     disableAllInputs();
-    if (stompClient && userData.message) {
+
+    let fileUrl = null;
+    if (file) {
+      try {
+        // Step 1: Get presigned URL from backend
+        const presignedUrlResponse = await axios.get('https://vtalk-backend-9e7a122da743.herokuapp.com/generatePresignedUrl', {
+          params: { key: file.name || 'recorded_audio.mp3', room: roomCode }
+        });
+        const presignedUrl = presignedUrlResponse.data;
+
+        // Step 2: Upload file to S3 using presigned URL with progress tracking
+        await axios.put(presignedUrl, file, {
+          headers: {
+            'Content-Type': file.type
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+          }
+        });
+
+        // Step 3: Get the file URL
+        fileUrl = presignedUrl.split('?')[0];
+      } catch (error) {
+        console.error('File upload error:', error);
+      }
+    }
+
+    if (stompClient && (userData.message || fileUrl)) {
       var chatMessage = {
         fullName: username,
         roomCode: roomCode,
         senderId: user.userId,
         content: userData.message,
+        media: fileUrl,
         timestamp: new Date(),
       };
       stompClient.send(`/app/chat`, {}, JSON.stringify(chatMessage));
       setUserData({ ...userData, "message": "" });
+      setFile(null);
+      setUploadProgress(0);
     }
-    setLoading(false);
+    console.log('Message sent');
+    console.log('enabling...');
     enableAllInputs();
   };
+
+
 
   useEffect(() => {
     if (inputRef.current) {
@@ -140,6 +217,7 @@ const ChatPage = () => {
 
   const leaveChatroom = () => {
     setLoading(true);
+    setLoaderMessage('Leaving Chat Room...');
     disableAllInputs();
     if (stompClient) {
       stompClient.send(`/app/user/disconnectUser`, {}, JSON.stringify(user));
@@ -149,7 +227,7 @@ const ChatPage = () => {
         .then((res) => {
           setLoading(false);
           enableAllInputs();
-          if (user){
+          if (user) {
             navigate(`/rooms`, { state: { user: res.data } });
           } else {
             navigate(`/`);
@@ -157,6 +235,9 @@ const ChatPage = () => {
         })
         .catch((err) => {
           console.error(err);
+          setLoading(false);
+          enableAllInputs();
+          navigate(`/`);
         });
     }
   };
@@ -177,7 +258,7 @@ const ChatPage = () => {
   return (
     <div className='chat-window'>
       <div className="chat-box">
-        {isLoading && <div className="loader">Leaving The Chat Room...</div>}
+        {isLoading && <div className="loader"></div>}
         <div className='chat-top'>
           <div className="room-label">{label}</div>
           <IoExit className='leave-button' onClick={leaveChatroom} />
@@ -199,11 +280,55 @@ const ChatPage = () => {
                   <div className="message-data">
                     <div>
                       {chat.fullName ? (
-                        <div className='content-message'>
-                          <p className='message-fullname'>{chat.fullName}</p>
+                        <div className="content-message">
+                          <p className="message-fullname">{chat.fullName}</p>
+                          {chat.media ? (
+                            <div className="media-content">
+                              {chat.media.toUpperCase().endsWith('.JPG') ||
+                                chat.media.toUpperCase().endsWith('.JPEG') ||
+                                chat.media.toUpperCase().endsWith('.PNG') ? (
+                                <img
+                                  src={chat.media}
+                                  alt="uploaded media"
+                                  className="uploaded-media"
+                                  style={{ filter: 'blur(10px)' }}
+                                  onLoad={(e) => { e.target.style.filter = 'none'; }}
+                                />
+                              ) : chat.media.toUpperCase().endsWith('.MP3') ||
+                                chat.media.toUpperCase().endsWith('.WAV') ? (
+                                <audio controls>
+                                  <source
+                                    src={chat.media}
+                                    type={`audio/${chat.media.split('.').pop()}`}
+                                  />
+                                  Your browser does not support the audio element.
+                                </audio>
+                              ) : chat.media.toUpperCase().endsWith('.MP4') ||
+                                chat.media.toUpperCase().endsWith('.WEBM') ? (
+                                <video controls style={{ filter: 'blur(10px)' }}
+                                  onLoadedData={(e) => { e.target.style.filter = 'none'; }}>
+                                  <source
+                                    src={chat.media}
+                                    type={`video/${chat.media.split('.').pop()}`}
+                                  />
+                                  Your browser does not support the video element.
+                                </video>
+                              ) : (
+                                <a href={chat.media} target="_blank" rel="noreferrer">
+                                  {chat.media.split('/').pop()}
+                                </a>
+                              )}
+                            </div>
+                          ) : (
+                            <></>
+                          )}
                           <p>{chat.content}</p>
                           <p className="message-time">
-                            {new Date(chat.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                            {new Date(chat.timestamp).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: true,
+                            })}
                           </p>
                         </div>
                       ) : (
@@ -213,13 +338,41 @@ const ChatPage = () => {
                   </div>
                   {chat.fullName && chat.senderId === userId && <div className="avatar">{chat.fullName[0].toUpperCase()}</div>}
                 </div>
+
               </React.Fragment>
             );
           })}
         </div>
 
         <form onSubmit={sendValue} className='chat-form'>
+          <div className='file-uploads'>
+            {file && (
+              <div className='file-icon'>
+                {file.type.startsWith('image/') && <IoImage />}
+                {file.type.startsWith('audio/') && <IoMusicalNote />}
+                {file.type.startsWith('video/') && <IoVideocam />}
+                <span>{file.name}</span>
+                <div className='file-deselect' onClick={handleFileDeselect}><IoClose /></div>
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div className='upload-progress'>
+                    <div className='progress-bar' style={{ width: `${uploadProgress}%` }}></div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="send-message">
+            <input
+              type="file"
+              id="file-upload"
+              accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
+            <label htmlFor="file-upload">
+              <IoAttach className='file-upload-button' />
+            </label>
             <input
               type="text"
               className="input-message"
@@ -229,9 +382,24 @@ const ChatPage = () => {
               onSubmit={sendValue}
               ref={inputRef}
             />
-            <IoSendSharp className='send-button' onClick={sendValue} />
+            {!userData.message && !file && (
+              <div onMouseDown={startRecording}
+                onMouseUp={stopRecording}
+                onMouseLeave={stopRecording}>
+                {isRecording ? <IoMicOff className='record-button' /> : <IoMic className='record-button' />}
+              </div>
+            )}
+            {userData.message || file ? (
+              <button type="submit" className='send-button'>
+                <IoSendSharp />
+              </button>
+            ) : (
+              <></>
+            )}
           </div>
         </form>
+
+
       </div>
     </div>
   );

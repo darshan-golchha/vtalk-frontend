@@ -17,9 +17,8 @@ const RoomSelection = (props) => {
   const [rooms, setRooms] = useState([]);
   const [roomDescription, setRoomDescription] = useState('');
   const navigate = useNavigate();
-  const { isLoading, setLoading, disableAllInputs, enableAllInputs } = useLoadingContext();
+  const { isLoading, setLoading, loaderMessage, setLoaderMessage, disableAllInputs, enableAllInputs } = useLoadingContext();
   const [isCreating, setCreating] = useState(false);
-  const [loaderMessage, setLoaderMessage] = useState('Loading...');
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
 
@@ -130,7 +129,7 @@ const RoomSelection = (props) => {
 
   return (
     <div className="room-selection">
-      {isLoading && <div className="loader">{loaderMessage}</div>}
+      {isLoading && <div className="loader"></div>}
       <h1 style={{ textAlign: 'center' }}>Welcome, {user && user.fullName}!</h1>
       <div className="create-search-box">
         <div className="search-section">
