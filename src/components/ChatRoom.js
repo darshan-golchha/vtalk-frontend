@@ -150,6 +150,27 @@ const ChatPage = () => {
     console.log(err);
   };
 
+  useEffect(() => {
+    const textarea = inputRef.current;
+    if (textarea) {
+      const resizeTextarea = () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = `${Math.min(textarea.scrollHeight, window.innerHeight * 0.6)}px`;
+      };
+
+      // Initially resize to fit content
+      resizeTextarea();
+
+      // Add event listener for input event
+      textarea.addEventListener('input', resizeTextarea);
+
+      // Clean up the event listener
+      return () => {
+        textarea.removeEventListener('input', resizeTextarea);
+      };
+    }
+  }, []);
+
   const handleMessage = (event) => {
     const { value } = event.target;
     setUserData({ ...userData, "message": value });
@@ -158,7 +179,6 @@ const ChatPage = () => {
   const sendValue = async (event) => {
     event.preventDefault();
     setUserData({ ...userData, "connected": true });
-    console.log('disabling...');
     disableAllInputs();
 
     let fileUrl = null;
@@ -202,8 +222,9 @@ const ChatPage = () => {
       setFile(null);
       setUploadProgress(0);
     }
-    console.log('Message sent');
-    console.log('enabling...');
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto'; // Reset height after sending
+    }
     enableAllInputs();
   };
 
@@ -373,13 +394,16 @@ const ChatPage = () => {
             <label htmlFor="file-upload">
               <IoAttach className='file-upload-button' />
             </label>
-            <input
-              type="text"
+            <textarea
               className="input-message"
               placeholder="Enter your message..."
               value={userData.message}
               onChange={handleMessage}
-              onSubmit={sendValue}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  sendValue(e);
+                }
+              }}
               ref={inputRef}
             />
             {!userData.message && !file && (

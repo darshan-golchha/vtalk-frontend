@@ -75,14 +75,16 @@
 
 .send-message {
   display: flex;
-  padding: 10px;
   border: #fff;
   border-radius: 25px;
   background-color: #1d1d1d;
+  padding-top: 7px;
+  padding-bottom: 7px;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.8);
   margin-bottom: 10px;
-  width: 100%;
   align-items: center;
+  width: 95vw;
+  max-width: 700px;
 
 }
 
@@ -104,12 +106,26 @@
   color: #ffffff;
   background-color: rgb(59, 59, 59);
   padding: 10px;
-  flex-grow: 1;
+  width: 100%;
+  resize: none; /* Prevent manual resizing */
+  overflow: auto; /* Show scrollbar when max height is reached */
+  text-overflow: ellipsis;
+  word-break: break-word;
+  text-wrap: wrap;
+  max-height: 60vh; /* Set a maximum height */
+  box-sizing: border-box; /* Include padding in height */
+  font-size: 15px;
 }
 
 .input-message:focus {
   outline: none;
 }
+
+.input-message::placeholder {
+  color: #999; /* Placeholder text color */
+}
+
+
 
 .leave-button {
   background-color: inherit;
@@ -248,8 +264,7 @@
   height: 45px;
 }
 .send-button{
-  background-color: inherit;
-  width: 40px;
+  background-color: transparent;
   height: 45px;
   transition: 0.3s;
   opacity: 1;
@@ -270,14 +285,21 @@
   background-color: #76c7c0;
   transition: width 0.3s;
 }
-.media-content a{
-  color: #fff;
+.media-content a {
+  color: #3498db; /* A more vibrant color for better visibility */
   text-decoration: none;
-  background-color:#242424;
-  padding: 2px;
-  border-radius: 5px;
-  margin: 5px;
+  background-color: #2c2c2c; /* Slightly lighter background for contrast */
+  padding: 5px 10px; /* Increased padding for better spacing */
+  border-radius: 8px; /* More rounded corners */
+  margin: 5px 0; /* Adjusted margin for spacing between links */
   text-overflow: ellipsis;
-  word-break: break-all;
+  word-break: break-word; /* Changed to 'break-word' for better word wrapping */
   display: inline-block;
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effects */
 }
+
+.media-content a:hover {
+  background-color: #3a3a3a; /* Darker background on hover */
+  color: #fff; /* Change text color to white on hover */
+}
+
